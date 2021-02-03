@@ -14,14 +14,15 @@ dbConexion();
 // Cors: no olvidar configurar la whitelist
 app.use(cors());
 
-// Rutas
-app.get('/', (req, resp) => {
-  resp.status(200).json({
-    isSuccess: true,
-    data: 'ok',
-    message: 'Solicitud realizada con éxito',
-  });
-});
+// Middleware
+// lectura y parseo del body, siempre ponerlo antes que las rutas
+app.use(express.json());
+
+// Rutas:
+// Cambiaremos app.get('path', callback(req, res))  por app.use('path', archivo.js)
+// para ello crearemos middlewares que nos permitan intersectar las rutas
+// y cargar nuestros respectivos archivos de rutas
+app.use('/api/usuarios', require('./routes/usuarios'));
 
 app.listen(process.env.PORT, () => {
   console.log('Express corriendo en el puerto ' + process.env.PORT);
