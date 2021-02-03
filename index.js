@@ -23,6 +23,7 @@ app.use(express.json());
 // para ello crearemos middlewares que nos permitan intersectar las rutas
 // y cargar nuestros respectivos archivos de rutas
 app.use('/api/usuarios', require('./routes/usuarios'));
+app.use('/api/login', require('./routes/auth'));
 
 app.listen(process.env.PORT, () => {
   console.log('Express corriendo en el puerto ' + process.env.PORT);

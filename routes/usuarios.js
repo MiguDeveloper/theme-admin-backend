@@ -7,9 +7,11 @@ const {
   getUsuarios,
   postUsuario,
   putUsuario,
+  deleteUser,
 } = require('../controllers/usuarios');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
+const { validarJwt } = require('../middlewares/validar-jwt');
 
 const router = Router();
 
@@ -26,7 +28,7 @@ const router = Router();
  *
  * recordar que solo se manda la referencia al metodo del controlador: 'getUsuario', 'postUsuario'
  */
-router.get('/', getUsuarios);
+router.get('/', [validarJwt], getUsuarios);
 router.post(
   '/',
   [
@@ -41,6 +43,7 @@ router.post(
 router.put(
   '/',
   [
+    validarJwt,
     check('nombre', 'El nombre es requerido').not().isEmpty(),
     check('email', 'El email es requerido').isEmail(),
     check('role', 'El rol es requerido').not().isEmpty(),
@@ -48,5 +51,7 @@ router.put(
   ],
   putUsuario
 );
+
+router.delete('/:id', [validarJwt], deleteUser);
 
 module.exports = router;

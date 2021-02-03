@@ -1,7 +1,7 @@
 const Usuario = require('../models/usuario');
 const { response } = require('express');
 const bcrypt = require('bcryptjs');
-const usuario = require('../models/usuario');
+const { generarJwt } = require('../helpers/jwt');
 
 const getUsuarios = async (req, res) => {
   // podemos filtrar el find tambien
@@ -11,6 +11,7 @@ const getUsuarios = async (req, res) => {
   res.status(200).json({
     isSuccess: true,
     usuarios: usuarios,
+    uid: req.uid, // solo a modo de ejemplo vemos que podemos pasar variables por el req
   });
 };
 
@@ -33,13 +34,19 @@ const postUsuario = async (req, res = response) => {
     const salt = bcrypt.genSaltSync();
     usuario.password = bcrypt.hashSync(password, salt);
 
-    await usuario.save();
+    // * importante: podemos tbm obtener el ide del mismo objeto usuario.id sin necesidad
+    // * de crear la constante 'userCreated'
+    const userCreated = await usuario.save();
 
-    // ! Ojo: recordar que solo podemos usar us res.json
-    // ! importante no devolver el usuario con sus campos sencibles, devolver token
+    // obtenemos el token
+    const token = await generarJwt(userCreated.id);
+
+    // * Ojo: recordar que solo podemos usar us res.json
+    // * importante: no devolver el usuario con sus campos sencibles, devolver token
     res.status(200).json({
       isSuccess: true,
       usuario,
+      token,
     });
   } catch (error) {
     res.status(500).json({
@@ -53,22 +60,19 @@ const putUsuario = async (req, res = response) => {
   // TODO: validar token y comprobar si el usuario es el correcto
   // Para atrapar el id que viene por el url
   //const uid = req.params.id;
-  const { email, uid } = req.body;
+  const { email, uid, password, google, ...campos } = req.body;
 
   try {
     const userExists = await Usuario.findById(uid);
     if (!userExists) {
-      res.status(404).json({
+      return res.status(404).json({
         isSuccess: false,
-        response: 'no existe el usuario con ese ID',
+        message: 'no existe el usuario con ese ID',
       });
     }
 
-    const campos = req.body;
-    if (userExists.email === email) {
-      delete campos.email;
-    } else {
-      const emailExists = await Usuario.findOne({ email: email });
+    if (userExists.email !== email) {
+      const emailExists = await Usuario.findOne({ email });
       if (emailExists) {
         return res.status(400).json({
           isSuccess: false,
@@ -77,11 +81,8 @@ const putUsuario = async (req, res = response) => {
       }
     }
 
-    // actualizamos
-    delete campos.uid;
-    delete campos.password;
-    delete campos.google;
-
+    // ponemos el parametro {new: true} para que nos devuelva el registro modificado
+    campos.email = email;
     const usuarioActualizado = await Usuario.findByIdAndUpdate(uid, campos, {
       new: true,
     });
@@ -98,4 +99,29 @@ const putUsuario = async (req, res = response) => {
   }
 };
 
-module.exports = { getUsuarios, postUsuario, putUsuario };
+const deleteUser = async (req, res = response) => {
+  const uid = req.params.id;
+  try {
+    const userExists = await Usuario.findById(uid);
+    if (!userExists) {
+      return res.status(404).json({
+        isSuccess: false,
+        message: 'El usuario no existe',
+      });
+    }
+
+    await Usuario.findByIdAndDelete(uid);
+
+    res.status(200).json({
+      isSuccess: true,
+      message: 'Usuario eliminado',
+    });
+  } catch (error) {
+    res.status(500).json({
+      isSuccess: false,
+      message: 'Error interno al momento de eliminar usuario',
+    });
+  }
+};
+
+module.exports = { getUsuarios, postUsuario, putUsuario, deleteUser };
