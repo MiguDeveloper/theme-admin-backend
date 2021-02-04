@@ -4,14 +4,25 @@ const bcrypt = require('bcryptjs');
 const { generarJwt } = require('../helpers/jwt');
 
 const getUsuarios = async (req, res) => {
-  // podemos filtrar el find tambien
-  // Usuario.find({}, 'nombre email role')
-  const usuarios = await Usuario.find();
+  const desde = Number(req.query.desde) || 0;
+
+  // podemos filtrar el find tambien: Usuario.find({}, 'nombre email role')
+  // const usuarios = await Usuario.find().skip(desde).limit(5);
+  // const totalReg = await Usuario.count();
+
+  // * Optimizacion: Como ejemplo de realizar dos promesas de manera simultanea
+  // * usaremos una sola promesa para resolver tanto el getUsuarios y el totalReg
+
+  const [usuarios, totalReg] = await Promise.all([
+    Usuario.find().skip(desde).limit(5),
+    Usuario.count(),
+  ]);
 
   res.status(200).json({
     isSuccess: true,
     usuarios: usuarios,
     uid: req.uid, // solo a modo de ejemplo vemos que podemos pasar variables por el req
+    total: totalReg,
   });
 };
 
