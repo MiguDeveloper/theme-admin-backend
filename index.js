@@ -32,3 +32,5 @@ app.use('/api/upload', require('./routes/uploads'));
 app.listen(process.env.PORT, () => {
   console.log('Express corriendo en el puerto ' + process.env.PORT);
 });
+
+// para ejecutar nuestro archivo de entrada sin nodemon ejecutamos: $ node pathIndexJs

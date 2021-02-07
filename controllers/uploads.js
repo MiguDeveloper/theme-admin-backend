@@ -5,7 +5,7 @@ const { actualizarImagen } = require('../helpers/actualizar-imagen');
 const path = require('path');
 const fs = require('fs');
 
-const uploadFile = (req, res = response) => {
+const uploadFile = async (req, res = response) => {
   const { tipo, id } = req.params;
 
   const tipoPermitidos = ['hospitales', 'medicos', 'usuarios'];
@@ -45,32 +45,32 @@ const uploadFile = (req, res = response) => {
   // generamos el path
   const pathArchivo = `./uploads/${tipo}/${nombArchivo}`;
 
-  // movemos la imagen
-  file.mv(pathArchivo, (err) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
-        isSuccess: false,
-        message: 'Error al mover la imagen',
-      });
-    }
+  await actualizarImagen(tipo, id, nombArchivo)
+    .then((rpta) => {
+      if (!rpta) {
+        return res.status(400).json({
+          isSuccess: false,
+          message: 'usuario|hospital|medico tipo no encontrado',
+        });
+      } else {
+        // movemos la imagen
+        file.mv(pathArchivo, (err) => {
+          if (err) {
+            return res.status(500).json({
+              isSuccess: false,
+              message: 'Error al mover la imagen',
+            });
+          }
 
-    // actualizar imagen
-    if (!actualizarImagen(tipo, id, nombArchivo)) {
-      console.log('id no encontrado');
-      return res.status(400).json({
-        isSuccess: false,
-        message: 'usuario o tipo no encontrado',
-        idUsuario: id,
-      });
-    }
-
-    res.status(200).json({
-      isSuccess: true,
-      message: `imagen: ${tipo} - subida correctamente`,
-      nombArchivo,
-    });
-  });
+          res.status(200).json({
+            isSuccess: true,
+            message: `imagen: ${tipo} - subida correctamente`,
+            nombArchivo,
+          });
+        });
+      }
+    })
+    .catch((err) => console.log('Error al buscar el tipo'));
 };
 
 const mostrarImagen = (req, res = response) => {
