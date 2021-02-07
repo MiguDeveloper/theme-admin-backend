@@ -1,4 +1,4 @@
-name: integracion continua
+name: CI adminbackend
 on:
   pull_request:
     branches: [master]
