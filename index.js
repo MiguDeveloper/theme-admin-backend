@@ -18,6 +18,9 @@ app.use(cors());
 // lectura y parseo del body, siempre ponerlo antes que las rutas
 app.use(express.json());
 
+// Middleware para acceso al directorio publico directo de html
+app.use(express.static('public'));
+
 // Rutas:
 // Cambiaremos app.get('path', callback(req, res))  por app.use('path', archivo.js)
 // para ello crearemos middlewares que nos permitan intersectar las rutas
