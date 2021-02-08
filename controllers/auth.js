@@ -84,4 +84,14 @@ const loginGoogle = async (req, res = response) => {
   }
 };
 
-module.exports = { login, loginGoogle };
+const renewToken = async (req, res = response) => {
+  const { uid } = req;
+
+  const token = await generarJwt(uid);
+  res.status(200).json({
+    isSuccess: true,
+    token,
+  });
+};
+
+module.exports = { login, loginGoogle, renewToken };

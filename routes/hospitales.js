@@ -25,13 +25,13 @@ router.post(
 );
 router.put(
   '/:id',
-  [check('nombre', 'El nombre del hospital es requerido'), validarJwt],
+  [
+    validarJwt,
+    check('nombre', 'El nombre del hospital es requerido'),
+    validarCampos,
+  ],
   putHospital
 ),
-  router.delete(
-    '/:id',
-    [check('nombre', 'El nombre del hospital es requerido'), validarJwt],
-    deleteHospital
-  );
+  router.delete('/:id', [validarJwt], deleteHospital);
 
 module.exports = router;
