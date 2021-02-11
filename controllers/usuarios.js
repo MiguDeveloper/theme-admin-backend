@@ -45,14 +45,14 @@ const postUsuario = async (req, res = response) => {
     const salt = bcrypt.genSaltSync();
     usuario.password = bcrypt.hashSync(password, salt);
 
-    // * importante: podemos tbm obtener el ide del mismo objeto usuario.id sin necesidad
+    // * importante: podemos tbm obtener el id del mismo objeto usuario.id sin necesidad
     // * de crear la constante 'userCreated'
     const userCreated = await usuario.save();
 
     // obtenemos el token
     const token = await generarJwt(userCreated.id);
 
-    // * Ojo: recordar que solo podemos usar us res.json
+    // * Ojo: recordar que solo podemos usar un res.json
     // * importante: no devolver el usuario con sus campos sencibles, devolver token
     res.status(200).json({
       isSuccess: true,
