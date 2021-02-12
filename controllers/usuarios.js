@@ -93,7 +93,10 @@ const putUsuario = async (req, res = response) => {
     }
 
     // ponemos el parametro {new: true} para que nos devuelva el registro modificado
-    campos.email = email;
+    if (!userExists.google) {
+      campos.email = email;
+    }
+
     const usuarioActualizado = await Usuario.findByIdAndUpdate(uid, campos, {
       new: true,
     });
